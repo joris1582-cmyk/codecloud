@@ -1,0 +1,599 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>CodeCloud - Remote Code Hoster & Virtual Drive</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+  <!-- Monaco Editor Loader -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.45.0/min/vs/loader.min.js"></script>
+</head>
+<body>
+
+  <!-- Top App Navigation -->
+  <header class="app-header">
+    <div class="header-left">
+      <div class="logo">
+        <div class="logo-icon">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M17.5 19H9a7 7 0 1 1 6.71-9h1.79a4.5 4.5 0 1 1 0 9Z"/>
+            <polyline points="13 11 16 14 13 17"/>
+            <line x1="8" y1="14" x2="16" y2="14"/>
+          </svg>
+        </div>
+        <div class="logo-text">
+          <span class="brand-title">CodeCloud</span>
+          <span class="brand-badge">VIRTUAL DRIVE</span>
+        </div>
+      </div>
+      <nav class="nav-tabs" id="navTabs">
+        <button class="nav-tab active" data-tab="studio-tab">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg>
+          Code Studio
+        </button>
+        <button class="nav-tab" data-tab="upload-tab">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+          Upload Projects
+        </button>
+        <button class="nav-tab highlight" data-tab="mount-tab">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="2" width="20" height="8" rx="2" ry="2"/><rect x="2" y="14" width="20" height="8" rx="2" ry="2"/><line x1="6" y1="6" x2="6.01" y2="6"/><line x1="6" y1="18" x2="6.01" y2="18"/></svg>
+          Mount Network Drive (Z:)
+        </button>
+        <button class="nav-tab" data-tab="settings-tab">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"/><circle cx="12" cy="12" r="3"/></svg>
+          Settings & Storage
+        </button>
+      </nav>
+    </div>
+
+    <div class="header-right">
+      <div class="status-chip" id="serverStatusChip">
+        <span class="status-dot online"></span>
+        <span class="status-text" id="statusServerIp">Connected (Port 3000)</span>
+      </div>
+      <button class="btn btn-outline btn-sm" id="headerMountQuickBtn">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 17l6-6-6-6"/><path d="M12 19h8"/></svg>
+        Copy Z: Mount
+      </button>
+      <button class="btn btn-secondary btn-sm" id="authBtn">
+        <span id="authBtnLabel">Admin</span>
+      </button>
+    </div>
+  </header>
+
+  <!-- Main Container -->
+  <main class="app-main">
+
+    <!-- VIEW 1: CODE STUDIO (MONACO EDITOR & EXPLORER) -->
+    <section class="tab-content active" id="studio-tab">
+      <div class="studio-layout">
+
+        <!-- Sidebar: Projects & File Tree -->
+        <aside class="studio-sidebar" id="studioSidebar">
+          <div class="sidebar-header">
+            <div class="project-selector-wrapper">
+              <label for="projectSelect">Workspace</label>
+              <div class="select-row">
+                <select id="projectSelect" class="select-input">
+                  <option value="">Loading workspaces...</option>
+                </select>
+                <button class="btn-icon" id="btnNewProject" title="New Workspace Folder">
+                  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+                </button>
+              </div>
+            </div>
+
+            <!-- Action buttons inside sidebar -->
+            <div class="tree-actions-toolbar">
+              <button class="btn-icon-text" id="btnNewFile" title="New File">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="12" y1="18" x2="12" y2="12"/><line x1="9" y1="15" x2="15" y2="15"/></svg>
+                <span>New File</span>
+              </button>
+              <button class="btn-icon-text" id="btnNewFolder" title="New Folder">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/><line x1="12" y1="11" x2="12" y2="17"/><line x1="9" y1="14" x2="15" y2="14"/></svg>
+                <span>Folder</span>
+              </button>
+              <button class="btn-icon-text" id="btnRefreshTree" title="Refresh Tree">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg>
+              </button>
+            </div>
+
+            <!-- Search box in tree -->
+            <div class="tree-search-wrapper">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+              <input type="text" id="treeSearchInput" placeholder="Filter files...">
+            </div>
+          </div>
+
+          <!-- Tree View -->
+          <div class="file-tree-container" id="fileTree">
+            <div class="tree-empty-msg">Select or upload a project to browse files</div>
+          </div>
+
+          <!-- Sidebar Footer: Native Editor Hint -->
+          <div class="sidebar-native-hint">
+            <div class="hint-title">💡 Laptop Direct Access</div>
+            <div class="hint-desc">Open this exact folder in VS Code, Sublime or Notepad++ at school via <code>Z:\&lt;folder&gt;</code> without downloading!</div>
+          </div>
+        </aside>
+
+        <!-- Editor Main Area -->
+        <main class="studio-editor-area">
+          <!-- Editor Tabs -->
+          <div class="editor-tabs-bar" id="editorTabsBar">
+            <div class="tabs-list" id="tabsList">
+              <!-- Tabs dynamically injected here -->
+            </div>
+          </div>
+
+          <!-- Editor Breadcrumbs & Actions -->
+          <div class="editor-subbar">
+            <div class="breadcrumbs" id="editorBreadcrumbs">
+              <span class="crumb root">Workspace</span>
+            </div>
+            <div class="editor-actions">
+              <span class="language-badge" id="editorLanguageBadge">plaintext</span>
+              <button class="btn btn-primary btn-sm" id="btnSaveFile" title="Save file (Ctrl+S)">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
+                <span>Save (Ctrl+S)</span>
+              </button>
+            </div>
+          </div>
+
+          <!-- Monaco Editor Target -->
+          <div class="monaco-container" id="monacoEditorContainer">
+            <div class="empty-editor-placeholder" id="emptyEditorPlaceholder">
+              <div class="placeholder-icon">
+                <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                  <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+                  <polyline points="14 2 14 8 20 8"/>
+                  <line x1="16" y1="13" x2="8" y2="13"/>
+                  <line x1="16" y1="17" x2="8" y2="17"/>
+                  <polyline points="10 9 9 9 8 9"/>
+                </svg>
+              </div>
+              <h3>No File Open</h3>
+              <p>Select a file from the sidebar to inspect or edit directly in the browser.</p>
+              <div class="quick-tips">
+                <div class="tip-card">
+                  <span class="tip-kbd">Ctrl + S</span>
+                  <span class="tip-text">Save changes back to server</span>
+                </div>
+                <div class="tip-card">
+                  <span class="tip-kbd">Z:\</span>
+                  <span class="tip-text">Edit via native code editor on laptop</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Bottom Status Bar -->
+          <footer class="editor-statusbar">
+            <div class="statusbar-left">
+              <span id="statusCursor">Ln 1, Col 1</span>
+              <span class="separator">|</span>
+              <span id="statusFileSize">0 KB</span>
+              <span class="separator">|</span>
+              <span id="statusEncoding">UTF-8</span>
+            </div>
+            <div class="statusbar-right">
+              <span id="statusDriveReminder">Mapped Drive: <strong id="drivePathLabel">Z:\Welcome-Project</strong></span>
+            </div>
+          </footer>
+        </main>
+
+      </div>
+    </section>
+
+    <!-- VIEW 2: UPLOAD PROJECTS -->
+    <section class="tab-content" id="upload-tab">
+      <div class="upload-view-container">
+
+        <div class="view-hero">
+          <span class="badge badge-accent">⚡ Supercharged Upload</span>
+          <h2>Upload Folders & Big Code Projects from Home</h2>
+          <p>Drop your folders or zip archives here. Once uploaded, access them on your school laptop on-demand without filling your laptop's local disk.</p>
+        </div>
+
+        <div class="upload-grid">
+          <!-- Main Dropzone -->
+          <div class="upload-card">
+            <div class="dropzone" id="dropzone">
+              <div class="dropzone-inner">
+                <div class="dropzone-icon">
+                  <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                    <polyline points="17 8 12 3 7 8"/>
+                    <line x1="12" y1="3" x2="12" y2="15"/>
+                  </svg>
+                </div>
+                <h3>Drag & Drop Entire Project Folder Here</h3>
+                <p class="dropzone-subtitle">or choose an option below to browse files from your computer</p>
+
+                <div class="dropzone-buttons">
+                  <label class="btn btn-primary" for="folderInput">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg>
+                    Upload Entire Folder
+                  </label>
+                  <input type="file" id="folderInput" webkitdirectory directory multiple style="display:none">
+
+                  <label class="btn btn-secondary" for="zipInput">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/><polyline points="3.27 6.96 12 12.01 20.73 6.96"/><line x1="12" y1="22.08" x2="12" y2="12"/></svg>
+                    Upload .ZIP Archive
+                  </label>
+                  <input type="file" id="zipInput" accept=".zip" style="display:none">
+                </div>
+
+                <div class="smart-filter-row">
+                  <label class="switch-container">
+                    <input type="checkbox" id="smartFilterToggle" checked>
+                    <span class="switch-slider"></span>
+                    <span class="switch-label">
+                      <strong>⚡ Smart Filter:</strong> Auto-skip bulky folders (<code>node_modules</code>, <code>.git</code>, <code>.cache</code>, <code>dist</code>, <code>__pycache__</code>)
+                    </span>
+                  </label>
+                </div>
+              </div>
+            </div>
+
+            <!-- Upload Progress Card (hidden by default) -->
+            <div class="upload-progress-card" id="uploadProgressCard" style="display:none">
+              <div class="progress-header">
+                <div class="progress-title-group">
+                  <span class="spinner-small" id="uploadSpinner"></span>
+                  <span class="progress-title" id="progressTitle">Uploading project files...</span>
+                </div>
+                <span class="progress-percentage" id="progressPercentage">0%</span>
+              </div>
+              <div class="progress-bar-track">
+                <div class="progress-bar-fill" id="progressBarFill" style="width: 0%"></div>
+              </div>
+              <div class="progress-footer">
+                <span id="progressFileCount">0 / 0 files</span>
+                <span id="progressStatus">Uploading...</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Existing Workspaces & Quick Actions -->
+          <div class="workspaces-side-card">
+            <div class="card-header">
+              <h3>Active Workspaces in Storage</h3>
+              <button class="btn btn-sm btn-outline" id="btnRefreshWorkspacesList">Refresh</button>
+            </div>
+            <div class="workspaces-list" id="workspacesList">
+              <!-- Dynamically rendered -->
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- VIEW 3: MOUNT AS NETWORK DRIVE (THE CORE SOLUTION) -->
+    <section class="tab-content" id="mount-tab">
+      <div class="mount-view-container">
+
+        <div class="view-hero">
+          <span class="badge badge-success">🚀 Zero-Download Solution</span>
+          <h2>Open Large Remote Projects in Any Code Editor</h2>
+          <p>By mounting CodeCloud as a virtual network drive (<code>Z:\</code>), your laptop streams files on demand. VS Code, Sublime, Notepad++, or IntelliJ will open project folders instantly without pre-downloading gigabytes of code.</p>
+        </div>
+
+        <!-- Architecture Flow Diagram -->
+        <div class="architecture-banner">
+          <div class="arch-step">
+            <div class="step-num">1</div>
+            <div class="step-info">
+              <strong>Your Home PC</strong>
+              <span>Hosts CodeCloud & WebDAV</span>
+            </div>
+          </div>
+          <div class="arch-arrow">➔</div>
+          <div class="arch-step">
+            <div class="step-num">2</div>
+            <div class="step-info">
+              <strong>Secure Link / Tunnel</strong>
+              <span>Cloudflare HTTPS Tunnel</span>
+            </div>
+          </div>
+          <div class="arch-arrow">➔</div>
+          <div class="arch-step highlight-step">
+            <div class="step-num">3</div>
+            <div class="step-info">
+              <strong>School Laptop</strong>
+              <span>Mapped to <code>Z:\</code> Drive</span>
+            </div>
+          </div>
+          <div class="arch-arrow">➔</div>
+          <div class="arch-step highlight-step">
+            <div class="step-num">4</div>
+            <div class="step-info">
+              <strong>Any Code Editor</strong>
+              <span>VS Code / Sublime / Notepad++</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- OS Selection Tabs -->
+        <div class="os-tabs">
+          <button class="os-tab active" data-os="windows">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M0 3.449L9.75 2.1v9.451H0m10.949-9.602L24 0v11.4H10.949M0 12.6h9.75v9.451L0 20.699M10.949 12.6H24V24l-12.9-1.801"/></svg>
+            Windows (10 / 11)
+          </button>
+          <button class="os-tab" data-os="macos">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M18.71 19.5c-.83 1.24-1.71 2.45-3.05 2.47-1.34.03-1.77-.79-3.29-.79-1.53 0-2 .77-3.27.82-1.31.05-2.3-1.32-3.14-2.53C4.25 17 2.94 12.45 4.7 9.39c.87-1.52 2.43-2.48 4.12-2.51 1.28-.02 2.5.87 3.29.87.78 0 2.26-1.07 3.81-.91.65.03 2.47.26 3.64 1.98-.09.06-2.17 1.28-2.15 3.81.03 3.02 2.65 4.03 2.68 4.04-.03.07-.42 1.44-1.38 2.83M15.97 6.38c.62-.75 1.04-1.8 0.93-2.85-.9.04-1.99.6-2.61 1.34-.55.63-.99 1.68-.86 2.69.98.08 2.02-.43 2.54-1.18z"/></svg>
+            macOS (Finder)
+          </button>
+          <button class="os-tab" data-os="linux">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2a5 5 0 0 0-5 5v3a5 5 0 0 0 10 0V7a5 5 0 0 0-5-5zM6 14v4a6 6 0 0 0 12 0v-4H6z"/></svg>
+            Linux
+          </button>
+          <button class="os-tab special" data-os="school-remote">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
+            Access From School (Free Tunnel)
+          </button>
+        </div>
+
+        <!-- OS Content: Windows -->
+        <div class="os-content active" id="os-windows">
+          <div class="guide-card">
+            <div class="guide-header">
+              <span class="guide-badge">Method 1: Instant 5-Second Command</span>
+              <h3>Map Virtual Drive via Command Prompt or PowerShell</h3>
+            </div>
+            <p>On your laptop, open <strong>Command Prompt</strong> or <strong>PowerShell</strong> and run this single command:</p>
+
+            <div class="command-box">
+              <code id="cmdWindowsNetUse">net use Z: http://127.0.0.1:3000/webdav /user:admin codecloud123 /persistent:yes</code>
+              <button class="btn-copy" data-target="cmdWindowsNetUse" title="Copy to clipboard">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+                Copy
+              </button>
+            </div>
+
+            <div class="instruction-steps">
+              <div class="step-item">
+                <span class="step-bullet">1</span>
+                <div>
+                  <strong>Open in VS Code:</strong>
+                  <p>In VS Code on your laptop, click <code>File</code> ➔ <code>Open Folder...</code> ➔ Navigate to <code>This PC</code> ➔ Select <strong>Z:\</strong> (or specific project folder inside). Alternatively run: <code>code Z:\Welcome-Project</code>.</p>
+                </div>
+              </div>
+              <div class="step-item">
+                <span class="step-bullet">2</span>
+                <div>
+                  <strong>Open in Sublime / Notepad++ / JetBrains:</strong>
+                  <p>Click <code>File</code> ➔ <code>Open Folder</code> and pick drive <code>Z:\</code>. That's it! Any file you click will be streamed and saved in real-time over the network.</p>
+                </div>
+              </div>
+              <div class="step-item">
+                <span class="step-bullet">3</span>
+                <div>
+                  <strong>Unmount / Disconnect when done:</strong>
+                  <div class="command-inline-box">
+                    <code id="cmdWindowsDisconnect">net use Z: /delete /y</code>
+                    <button class="btn-copy-sm" data-target="cmdWindowsDisconnect">Copy</button>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div class="tip-box">
+              <strong>💡 Graphical Method (File Explorer):</strong>
+              <p>Open <strong>File Explorer</strong> ➔ Right click <strong>This PC</strong> ➔ Click <strong>Map network drive...</strong> ➔ Pick Drive <code>Z:</code> ➔ In Folder field paste: <code id="webdavFolderUrl">http://localhost:3000/webdav</code> ➔ Check <em>Connect using different credentials</em> ➔ Enter username <code>admin</code> and your password.</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- OS Content: macOS -->
+        <div class="os-content" id="os-macos">
+          <div class="guide-card">
+            <h3>Mount via macOS Finder</h3>
+            <div class="instruction-steps">
+              <div class="step-item">
+                <span class="step-bullet">1</span>
+                <p>Open <strong>Finder</strong> on your Mac laptop.</p>
+              </div>
+              <div class="step-item">
+                <span class="step-bullet">2</span>
+                <p>Press <kbd>Command ⌘</kbd> + <kbd>K</kbd> (or click <strong>Go</strong> ➔ <strong>Connect to Server...</strong>).</p>
+              </div>
+              <div class="step-item">
+                <span class="step-bullet">3</span>
+                <p>In the Server Address box, enter:</p>
+                <div class="command-box">
+                  <code id="cmdMacFinder">http://127.0.0.1:3000/webdav</code>
+                  <button class="btn-copy" data-target="cmdMacFinder">Copy</button>
+                </div>
+              </div>
+              <div class="step-item">
+                <span class="step-bullet">4</span>
+                <p>Click <strong>Connect</strong> and enter username <code>admin</code> and password.</p>
+              </div>
+              <div class="step-item">
+                <span class="step-bullet">5</span>
+                <p>The drive mounts under <code>/Volumes/webdav</code>. Open it in VS Code, Sublime, or Cursor!</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- OS Content: Linux -->
+        <div class="os-content" id="os-linux">
+          <div class="guide-card">
+            <h3>Mount via davfs2 on Linux</h3>
+            <p>Mount CodeCloud into a local directory using standard WebDAV:</p>
+            <div class="command-box">
+              <code id="cmdLinuxMount">sudo mount -t davfs http://127.0.0.1:3000/webdav /mnt/codecloud -o username=admin</code>
+              <button class="btn-copy" data-target="cmdLinuxMount">Copy</button>
+            </div>
+            <p style="margin-top: 12px; color: #94a3b8;">Or open your file manager (Nautilus, Dolphin) and press <kbd>Ctrl + L</kbd> ➔ enter <code>dav://127.0.0.1:3000/webdav</code>.</p>
+          </div>
+        </div>
+
+        <!-- OS Content: School Remote Access (Cloudflare Tunnel) -->
+        <div class="os-content" id="os-school-remote">
+          <div class="guide-card">
+            <span class="badge badge-accent">🌐 100% Free & No Port Forwarding</span>
+            <h3>How to Connect From School Over the Internet</h3>
+            <p>To reach your home PC from school Wi-Fi without configuring router port forwarding, use <strong>Cloudflare Tunnel</strong>. It gives you a free, public <code>https://...</code> link with zero router setup!</p>
+
+            <div class="instruction-steps">
+              <div class="step-item">
+                <span class="step-bullet">1</span>
+                <div>
+                  <strong>Start the Tunnel on your Home PC:</strong>
+                  <p>Run this in Command Prompt on your home PC while CodeCloud is running:</p>
+                  <div class="command-box">
+                    <code id="cmdCloudflareTunnel">npx -y cloudflared tunnel --url http://localhost:3000</code>
+                    <button class="btn-copy" data-target="cmdCloudflareTunnel">Copy</button>
+                  </div>
+                </div>
+              </div>
+              <div class="step-item">
+                <span class="step-bullet">2</span>
+                <div>
+                  <strong>Get Your Secure HTTPS Link:</strong>
+                  <p>Cloudflare will print a URL like: <code>https://your-name-1234.trycloudflare.com</code>.</p>
+                </div>
+              </div>
+              <div class="step-item">
+                <span class="step-bullet">3</span>
+                <div>
+                  <strong>Connect From Your Laptop at School:</strong>
+                  <p>On your school laptop, map the drive using the HTTPS link:</p>
+                  <div class="command-box">
+                    <code>net use Z: https://YOUR-SUBDOMAIN.trycloudflare.com/webdav /user:admin codecloud123</code>
+                  </div>
+                  <p style="margin-top: 6px; color: #94a3b8;">Because Cloudflare provides a real SSL certificate, Windows connects effortlessly!</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- VIEW 4: SETTINGS & STORAGE STATS -->
+    <section class="tab-content" id="settings-tab">
+      <div class="settings-view-container">
+
+        <div class="settings-grid">
+          <!-- Credentials Card -->
+          <div class="settings-card">
+            <div class="card-header">
+              <h3>Security & Credentials</h3>
+              <span class="badge badge-accent">WebDAV & Dashboard</span>
+            </div>
+            <p>These credentials protect both your WebDAV network drive access and this web dashboard.</p>
+            <form id="settingsForm">
+              <div class="form-group">
+                <label for="settingUsername">Username</label>
+                <input type="text" id="settingUsername" class="text-input" value="admin" required>
+              </div>
+              <div class="form-group">
+                <label for="settingPassword">New Password</label>
+                <input type="password" id="settingPassword" class="text-input" placeholder="Enter new password">
+              </div>
+              <div class="form-group">
+                <label for="settingPort">Server Port</label>
+                <input type="number" id="settingPort" class="text-input" value="3000" min="1024" max="65535">
+              </div>
+              <button type="submit" class="btn btn-primary" id="btnSaveSettings">
+                Save Credentials
+              </button>
+            </form>
+          </div>
+
+          <!-- Storage Statistics Card -->
+          <div class="settings-card">
+            <div class="card-header">
+              <h3>Server & Storage Stats</h3>
+              <button class="btn btn-sm btn-outline" id="btnRefreshStats">Refresh</button>
+            </div>
+            <div class="stats-metric-grid">
+              <div class="metric-box">
+                <span class="metric-label">Total Workspaces</span>
+                <span class="metric-value" id="statWorkspaces">0</span>
+              </div>
+              <div class="metric-box">
+                <span class="metric-label">Total Code Files</span>
+                <span class="metric-value" id="statFiles">0</span>
+              </div>
+              <div class="metric-box">
+                <span class="metric-label">Storage Usage</span>
+                <span class="metric-value" id="statSizeMB">0 MB</span>
+              </div>
+              <div class="metric-box">
+                <span class="metric-label">WebDAV Protocol</span>
+                <span class="metric-value text-accent">RFC 4918 v2</span>
+              </div>
+            </div>
+
+            <div class="storage-path-box">
+              <label>Host Storage Directory:</label>
+              <code id="statStoragePath">Loading...</code>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </section>
+
+  </main>
+
+  <!-- Login Modal -->
+  <div class="modal-overlay" id="loginModal" style="display: none;">
+    <div class="modal-box">
+      <div class="modal-header">
+        <div class="logo-icon">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+        </div>
+        <h2>Sign in to CodeCloud</h2>
+        <p>Enter your server credentials to access files</p>
+      </div>
+      <form id="loginForm">
+        <div class="form-group">
+          <label for="loginUsername">Username</label>
+          <input type="text" id="loginUsername" class="text-input" value="admin" required>
+        </div>
+        <div class="form-group">
+          <label for="loginPassword">Password</label>
+          <input type="password" id="loginPassword" class="text-input" value="codecloud123" required>
+        </div>
+        <div id="loginError" class="form-error" style="display:none"></div>
+        <button type="submit" class="btn btn-primary btn-block">Sign In</button>
+      </form>
+    </div>
+  </div>
+
+  <!-- New Project / Item Modal -->
+  <div class="modal-overlay" id="promptModal" style="display: none;">
+    <div class="modal-box">
+      <div class="modal-header">
+        <h3 id="promptModalTitle">Create Item</h3>
+      </div>
+      <div class="modal-body">
+        <div class="form-group">
+          <label id="promptModalLabel" for="promptModalInput">Name:</label>
+          <input type="text" id="promptModalInput" class="text-input" placeholder="e.g. MyNewProject">
+        </div>
+      </div>
+      <div class="modal-actions">
+        <button class="btn btn-secondary" id="promptModalCancel">Cancel</button>
+        <button class="btn btn-primary" id="promptModalConfirm">Confirm</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Toast Notification Container -->
+  <div class="toast-container" id="toastContainer"></div>
+
+  <script src="app.js"></script>
+</body>
+</html>

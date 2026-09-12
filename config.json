@@ -1,0 +1,6 @@
+{
+  "port": 3050,
+  "username": "admin",
+  "password": "codecloud123",
+  "storageDir": "./storage"
+}
