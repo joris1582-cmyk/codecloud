@@ -148,7 +148,7 @@ def a_miss(c):
         c.shake = U * 0.014 * math.sin(k * math.pi)
         if 0.3 < k < 0.42: c.flash = 0.35
     pop("it passes", "MISSED!", 0.5, 0.30, 0.13, YEL, hold=1.5)
-    for i, (ph, tx) in enumerate([("No explosion", "✕ EXPLOSION"), ("No fire", "✕ FIRE"), ("No endless", "✕ WINTER")]):
+    for i, (ph, tx) in enumerate([("No explosion", "NO EXPLOSION"), ("No fire", "NO FIRE"), ("No endless", "NO WINTER")]):
         pop(ph, tx, 0.5, 0.285 + i * 0.045, 0.062, RED if i < 2 else (150, 215, 255))
     c.zoom = 1.04
 
@@ -680,7 +680,7 @@ def o_splash(c):
     depth = ocean(c)
     sy = H * 0.31 - c.tl * U * 0.55
     if sy > -U * 0.1:
-        c.d.rectangle([0, 0, W, sy], fill=(196, 232, 250))
+        if sy > 1: c.d.rectangle([0, 0, W, sy], fill=(196, 232, 250))
         for x in range(0, W, 36):
             yy = sy + math.sin(x * 0.03 + c.t * 4) * 8
             c.d.ellipse([x - 22, yy - 14, x + 40, yy + 14], fill=(225, 244, 255))
