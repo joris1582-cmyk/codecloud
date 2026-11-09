@@ -16,6 +16,8 @@ GHOST = (120, 255, 170)
 # ----------------------------------------------------------------- props
 def sea(c, y, top, bot, t, amp=1.0, seed=1, foam=True):
     W, H, U = c.W, c.H, c.U
+    if y >= H - 2:
+        return
     c.d.rectangle([0, y, W, H], fill=bot)
     for layer in range(4):
         yy = y + layer * U * 0.05
@@ -342,7 +344,7 @@ def sc_stairs_run(c):
     c.d.rectangle([W / 2 - U * 0.04, 0, W / 2 + U * 0.04, H], fill=(20, 22, 26))
     person(c.cd, W / 2 + U * 0.08, gy + U * 0.05, U * 0.32, (5, 6, 8), "boy", 1, c.t * 12, run=True)
     if c.k > 0.4:
-        wy = lerp(H, gy + U * 0.3, (c.k - 0.4) / 0.6)
+        wy = lerp(H, min(gy + U * 0.3, H * 0.85), (c.k - 0.4) / 0.6)
         sea(c, wy, (30, 60, 60), (10, 25, 25), c.t * 2, amp=0.8, foam=False)
     c.shake = U * 0.008
     c.zoom = 1.04
