@@ -1,0 +1,7 @@
+audio/
+build/
+final/*.mp4
+preview/
+preview2/
+urls.txt
+__pycache__/
