@@ -10,7 +10,10 @@ from PIL import Image, ImageDraw, ImageFilter, ImageFont, ImageChops
 FPS = 30
 FONT_BLACK = "/usr/share/fonts/opentype/inter/InterDisplay-Black.otf"
 FONT_BOLD = "/usr/share/fonts/opentype/inter/Inter-ExtraBold.otf"
-TIMING = json.load(open("timing.json"))
+TIMING = json.load(open("timing.json")) if __import__("os").path.exists("timing.json") else []
+HL_COLOR = [(255, 221, 0)]
+END_TEXT = ["FOLLOW FOR MORE DINO STORIES"]
+HEADER_COLOR = [(220, 30, 30)]
 TITLES = ["The Night The Mountain Woke Up", "Alone In The Ash", "The Sky Hunter",
           "The Valley Of Bones", "Small Horns, Big Heart", "The Way Home"]
 
@@ -720,7 +723,7 @@ def draw_caption(img, groups, t, W, H, vert):
     x = (W - total) / 2
     for w, wd, wo in zip(words, widths, g):
         active = wo["t0"] <= t < wo["t1"] + 0.05
-        col = (255, 221, 0) if active else (255, 255, 255)
+        col = HL_COLOR[0] if active else (255, 255, 255)
         yy = y - (size * 0.06 if active else 0) + (1 - pop) * size * 0.25
         d.text((x, yy), w, font=f, fill=col, stroke_width=max(4, size // 9), stroke_fill=(0, 0, 0))
         x += wd + space
@@ -733,7 +736,7 @@ def draw_header(img, part, t, W, H):
     tw = d.textlength(txt, font=f1)
     y = H * 0.115
     d.rounded_rectangle([(W - tw) / 2 - W * 0.04, y - W * 0.012, (W + tw) / 2 + W * 0.04, y + W * 0.125],
-                        radius=int(W * 0.03), fill=(220, 30, 30))
+                        radius=int(W * 0.03), fill=HEADER_COLOR[0])
     d.text(((W - tw) / 2, y), txt, font=f1, fill=(255, 255, 255))
     title = TITLES[part - 1].upper()
     sz = int(W * 0.06)
@@ -750,11 +753,11 @@ def draw_endcard(img, part, k, W, H, vert):
     if part < 6:
         a, b = f"PART {part + 1}", "FOLLOW SO YOU DON'T MISS IT"
     else:
-        a, b = "THE END...?", "FOLLOW FOR MORE DINO STORIES"
+        a, b = "THE END...?", END_TEXT[0]
     f1 = font(FONT_BLACK, int(W * (0.13 if vert else 0.08)))
     f2 = font(FONT_BLACK, int(W * (0.05 if vert else 0.03)))
     y = H * (0.40 if vert else 0.38)
-    for txt, f, col, dy in [(a, f1, (255, 221, 0), 0), (b, f2, (255, 255, 255), f1.size * 1.25)]:
+    for txt, f, col, dy in [(a, f1, HL_COLOR[0], 0), (b, f2, (255, 255, 255), f1.size * 1.25)]:
         tw = d.textlength(txt, font=f)
         d.text(((W - tw) / 2, y + dy), txt, font=f, fill=col, stroke_width=max(4, f.size // 10), stroke_fill=(0, 0, 0))
 
@@ -766,7 +769,7 @@ def draw_chapter(img, part, t, W, H):
     x = W * 0.05; y = H * 0.07
     a = int(255 * k)
     layer = Image.new("RGBA", (W, H), (0, 0, 0, 0)); ld = ImageDraw.Draw(layer)
-    ld.text((x, y), f"PART {part}", font=f1, fill=(255, 221, 0, a), stroke_width=4, stroke_fill=(0, 0, 0, a))
+    ld.text((x, y), f"PART {part}", font=f1, fill=HL_COLOR[0] + (a,), stroke_width=4, stroke_fill=(0, 0, 0, a))
     ld.text((x, y + H * 0.065), TITLES[part - 1].upper(), font=f2, fill=(255, 255, 255, a), stroke_width=5, stroke_fill=(0, 0, 0, a))
     img.paste(layer, (0, 0), layer)
 
@@ -797,10 +800,10 @@ def render_frame(part, t, W, H, mode, sched, groups):
     c.gy = H * (0.58 if vert else 0.74)
     c.img = Image.new("RGB", (W, H)); c.d = ImageDraw.Draw(c.img)
     chars = Image.new("RGBA", (W, H), (0, 0, 0, 0)); c.cd = ImageDraw.Draw(chars)
-    c.zoom, c.shake, c.fog, c.birds, c.river = 1.0, 0.0, [], False, False
+    c.zoom, c.shake, c.fog, c.birds, c.river, c.flash = 1.0, 0.0, [], False, False, 0.0
     for i, (t0, t1, fn) in enumerate(sched):
         if t0 <= t < t1 or (i == len(sched) - 1 and t >= t0):
-            c.t = t - t0; c.k = clamp((t - t0) / max(0.1, t1 - t0))
+            c.t = t - t0; c.tl = t - t0; c.k = clamp((t - t0) / max(0.1, t1 - t0))
             fn(c); trans = (t - t0); break
     # shadow pass for characters: soften edges
     chars = chars.filter(ImageFilter.GaussianBlur(0.9))
@@ -812,6 +815,8 @@ def render_frame(part, t, W, H, mode, sched, groups):
         fl = fl.filter(ImageFilter.GaussianBlur(8)).resize((W, H), Image.BILINEAR)
         c.img.paste(fl, (0, 0), fl)
     img = c.img
+    if c.flash:
+        img = Image.blend(img, Image.new("RGB", (W, H), (200, 210, 230)), c.flash)
     z = c.zoom
     sx = sy = 0
     if c.shake:

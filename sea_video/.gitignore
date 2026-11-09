@@ -1,0 +1,6 @@
+audio/
+build/
+final/
+preview/
+preview2/
+__pycache__/
