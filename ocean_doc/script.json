@@ -1,0 +1,12 @@
+{
+ "title": "THE OCEAN IS MORE TERRIFYING THAN YOU THINK",
+ "final_text": "WHAT ELSE IS DOWN THERE?",
+ "scenes": [
+  {"id": 1, "name": "The Unknown", "start": 0.0, "narration": "The ocean looks peaceful from above. But beneath the surface lies a world we barely understand."},
+  {"id": 2, "name": "Eternal Darkness", "start": 8.0, "narration": "At around 1,000 metres deep, sunlight is gone. No sunrise. No moonlight. Just permanent darkness."},
+  {"id": 3, "name": "Crushing Pressure", "start": 18.0, "narration": "In the deepest ocean trenches, pressure exceeds a thousand times what we experience at the surface."},
+  {"id": 4, "name": "Creatures in the Darkness", "start": 28.0, "narration": "Some creatures generate their own light. And some use that light to lure unsuspecting prey towards their mouths."},
+  {"id": 5, "name": "Giants Below", "start": 39.0, "narration": "Giant squid are real. They inhabit deep waters where humans have rarely observed them alive."},
+  {"id": 6, "name": "What Haven't We Seen?", "start": 49.0, "narration": "Scientists have visually explored only a tiny fraction of the deep seafloor. The terrifying part? We still have so much left to discover."}
+ ]
+}

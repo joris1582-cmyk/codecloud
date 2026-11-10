@@ -1,0 +1,9 @@
+__pycache__/
+plates_raw/
+build/
+preview/
+final/*.mp4
+audio/mix.wav
+audio/premaster.wav
+audio/stem_*.wav
+*.log
