@@ -17,14 +17,14 @@ COLOR="-colorspace bt709 -color_primaries bt709 -color_trc bt709 -color_range tv
 
 # 2160x3840 master (YouTube)
 ffmpeg -y -v error -i build/picture_2160.mp4 -i audio/mix.wav -map 0:v -map 1:a \
-  -c:v libx264 -preset slow -crf 20 -maxrate 40M -bufsize 80M -pix_fmt yuv420p -profile:v high -g 60 -bf 2 \
+  -c:v libx264 -preset slow -crf 19 -maxrate 45M -bufsize 90M -pix_fmt yuv420p -profile:v high -g 60 -bf 2 \
   -x264-params aq-mode=3:aq-strength=0.8 $COLOR -c:a aac -b:a 256k -ar 48000 -movflags +faststart \
   final/ocean_terrifying_4k.mp4
 
 # 1080x1920 (TikTok, Shorts)
 ffmpeg -y -v error -i build/picture_2160.mp4 -i audio/mix.wav -map 0:v -map 1:a \
   -vf "scale=1080:1920:flags=lanczos" \
-  -c:v libx264 -preset slow -crf 18 -maxrate 14M -bufsize 28M -pix_fmt yuv420p -profile:v high -level 4.2 -g 60 -bf 2 \
+  -c:v libx264 -preset slow -crf 17 -maxrate 16M -bufsize 32M -pix_fmt yuv420p -profile:v high -level 4.2 -g 60 -bf 2 \
   -x264-params aq-mode=3:aq-strength=0.8 $COLOR -c:a aac -b:a 192k -ar 48000 -movflags +faststart \
   final/ocean_terrifying_1080.mp4
 
