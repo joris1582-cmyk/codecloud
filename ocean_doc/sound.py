@@ -464,7 +464,8 @@ def limit(x, ceil=0.89):
     need = np.minimum(1.0, ceil / np.maximum(pk, 1e-9))
     from scipy.ndimage import minimum_filter1d
     g = minimum_filter1d(need, 2 * la + 1)
-    g = np.minimum(g, lp(g, 1.3, 1))
+    sos = signal.butter(1, 1.3, "lowpass", fs=SR, output="sos")          # slow release; starts settled at unity
+    g = np.minimum(g, signal.sosfilt(sos, g, zi=signal.sosfilt_zi(sos) * g[0])[0])
     g = minimum_filter1d(g, la)
     return x * g[:, None]
 

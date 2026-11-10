@@ -729,7 +729,9 @@ def shot_abyss(t):
         gy0 = 0.375 + 0.006 * tg + 0.004 * math.sin(0.7 * tg + 1.0)
         breathe = 0.75 + 0.25 * math.sin(6.283 * 0.55 * tg)
         rise = ramp(t, TL.T_GLOW0, TL.T_GLOW0 + 1.3)
-        pts = [(gx0, gy0, 0.062, 0.075 * g * breathe, (0.10, 0.50, 0.95)), (gx0, gy0, 0.024, 0.085 * g * breathe, (0.10, 0.62, 0.90))]
+        pts = [(gx0, gy0, 0.060, 0.070 * g * breathe, (0.10, 0.50, 0.95)), (gx0, gy0, 0.024, 0.085 * g * breathe, (0.10, 0.62, 0.90)),
+               (gx0 + 0.040, gy0 - 0.014, 0.038, 0.045 * g * (1.5 - breathe), (0.10, 0.52, 0.95)),      # not one round blob
+               (gx0 - 0.034, gy0 + 0.022, 0.030, 0.040 * g * breathe, (0.11, 0.58, 0.90))]
         for ox, oy, sg, amp, ph, fr, col, off in GLOW_PTS:
             t_off = TL.T_GLOW1 - 1.15 + 1.0 * off                       # the lights go out one by one
             a = amp * rise * (1 - ramp(t, t_off - 0.10, t_off)) * (0.55 + 0.45 * math.sin(6.283 * fr * t + ph)) ** 2
@@ -957,12 +959,16 @@ def worker(job):
     cv2.setNumThreads(1)
     setup(scale)
     path = os.path.join(outdir, "chunk_%03d.mp4" % idx)
+    mark = path + ".%d-%d.done" % (f0, f1)
+    if os.path.exists(mark):                      # finished in an earlier, interrupted run
+        return idx, path, f1 - f0
     p = subprocess.Popen(encode_cmd(path, crf, preset), stdin=subprocess.PIPE)
     for fi in range(f0, f1):
         p.stdin.write(frame(fi).tobytes())
     p.stdin.close()
     if p.wait() != 0:
         raise RuntimeError("ffmpeg failed on chunk %d" % idx)
+    open(mark, "w").close()
     return idx, path, f1 - f0
 
 
