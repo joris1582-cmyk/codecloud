@@ -61,7 +61,7 @@ for i in range(n):
     z = 1.08 + 0.06 * (k / HOOK)
     cw, ch = W / z, H / z
     img = img.resize((W, H), Image.BILINEAR, box=((W - cw) / 2, (H - ch) / 2, (W + cw) / 2, (H + ch) / 2))
-    if k < 0.12:
+    if k < 0.12 and os.environ.get("HOOK_FLASH", "1") != "0":   # HOOK_FLASH=0 keeps frame 0 clean (usable as cover)
         img = Image.blend(img, Image.new("RGB", (W, H), (255, 255, 255)), 0.6 * (1 - k / 0.12))
     overlay(img, k, tt)
     p.stdin.write(img.tobytes())
